@@ -12,14 +12,13 @@ def ler_arquivo_github(url):
     response = requests.get(url)
     if response.status_code == 200:
         print("Iniciando validação!")
-        print(response.text)  # Verifique o conteúdo que está sendo retornado
         return response.text  # Retorna o conteúdo do arquivo como string
     else:
         messagebox.showerror("Erro", f"Erro ao acessar o arquivo: {response.status_code}")
         sys.exit()
 
 # Função para validar a versão do arquivo .ini
-def valida_versao(conteudo_ini, versao_atual):
+def valida_versao(conteudo_ini, versao_atual, url_novo_arquivo):
     config = configparser.ConfigParser()
     config.read_string(conteudo_ini)
     
@@ -30,14 +29,35 @@ def valida_versao(conteudo_ini, versao_atual):
         if versao_atual != versao_online:
             resposta = messagebox.askyesno("Atualização Disponível", "Uma versão mais recente está disponível. Deseja atualizar?")
             if resposta:
-                # Lógica para baixar a versão mais recente
+                # Baixar o novo arquivo .py
                 messagebox.showinfo("Atualizando", "Baixando e atualizando para a versão mais recente.")
-                # Você pode implementar o download da nova versão do arquivo aqui, por exemplo
-                # requests.get(<url_do_arquivo>).content
+                download_novo_arquivo(url_novo_arquivo)
             else:
                 messagebox.showinfo("Versão Atual", "Você está usando a versão mais antiga. Algumas funcionalidades podem não estar disponíveis.")
+                sys.exit()
     except (configparser.NoSectionError, configparser.NoOptionError) as e:
         messagebox.showerror("Erro", f"Erro ao verificar versão: {e}")
+        sys.exit()
+
+# Função para baixar o novo arquivo .py
+def download_novo_arquivo(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        novo_arquivo = "Estoque_atualizado.py"
+        
+        # Salva o arquivo baixado
+        with open(novo_arquivo, "wb") as f:
+            f.write(response.content)
+        
+        # Substitui o arquivo antigo
+        print(f"Arquivo atualizado baixado como {novo_arquivo}")
+        
+        # Fecha a aplicação e abre o novo arquivo
+        messagebox.showinfo("Atualização Completa", "O arquivo foi atualizado com sucesso.")
+        os.system(f"python {novo_arquivo}")  # Executa o novo arquivo
+        sys.exit()  # Encerra o processo atual
+    else:
+        messagebox.showerror("Erro", f"Erro ao baixar o novo arquivo: {response.status_code}")
         sys.exit()
 
 # Função para validar o conteúdo do arquivo .ini (validação de licença)
@@ -45,17 +65,12 @@ def valida_licenca(conteudo_ini):
     config = configparser.ConfigParser()
     config.read_string(conteudo_ini)
 
-    print("Seções encontradas:", config.sections())  # Depuração
-
     try:
         confere_valor = config.get('valida', 'confere').strip()  # Remove espaços extras
-        print(f"Valor de confere no arquivo: '{confere_valor}'")  # Depuração
-
-        # Transformar em uma lista, separando por vírgula ou espaço
         valores_validos = [v.strip() for v in confere_valor.replace(',', ' ').split()]
 
         # Verifica se '1' OU '2' estão na lista
-        if '1' in valores_validos:
+        if '0' in valores_validos:
             print("✅ Validação ocorreu com êxito, Executando aplicação")
         else:
             messagebox.showerror("Erro", "❌ Validação não passou! Consulte o desenvolvedor para obter a licença!")
@@ -66,19 +81,23 @@ def valida_licenca(conteudo_ini):
         sys.exit()
 
 # URL do arquivo .ini no GitHub
-url_github = 'https://raw.githubusercontent.com/Bruno-BCR/valida/main/valida-cliente.ini'
+url_github_ini = 'https://raw.githubusercontent.com/Bruno-BCR/valida/main/valida-contagem-estoque.ini'
+
+# URL do arquivo atualizado (.py) no GitHub
+url_novo_arquivo = 'https://raw.githubusercontent.com/Bruno-BCR/valida/a2125fb0ca9de613339c0f5f92be23d18ba4788e/Estoque.py'
 
 # Versão atual do software
 versao_atual = '1.0.1'  # Atualize conforme sua versão atual
 
 # Baixar e validar o arquivo .ini
-conteudo_ini = ler_arquivo_github(url_github)  # Baixa o conteúdo do arquivo
+conteudo_ini = ler_arquivo_github(url_github_ini)  # Baixa o conteúdo do arquivo
 
 # Validar a versão e licença
-valida_versao(conteudo_ini, versao_atual)  # Valida versão
+valida_versao(conteudo_ini, versao_atual, url_novo_arquivo)  # Valida versão
 valida_licenca(conteudo_ini)  # Valida licença
 
 # O restante do código continua normalmente abaixo...
+
 
 
 # Nome do banco de dados
