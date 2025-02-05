@@ -39,22 +39,22 @@ def valida_versao(conteudo_ini, versao_atual, url_novo_arquivo):
         messagebox.showerror("Erro", f"Erro ao verificar versão: {e}")
         sys.exit()
 
-# Função para baixar o novo arquivo .py
+# Função para baixar o novo arquivo .py e substituir o antigo
 def download_novo_arquivo(url):
     response = requests.get(url)
     if response.status_code == 200:
-        novo_arquivo = "Estoque_atualizado.py"
-        
-        # Salva o arquivo baixado
-        with open(novo_arquivo, "wb") as f:
+        arquivo_atual = "Estoque.py"  # Nome do arquivo original
+
+        # Salva o arquivo baixado com o mesmo nome, substituindo o antigo
+        with open(arquivo_atual, "wb") as f:
             f.write(response.content)
         
-        # Substitui o arquivo antigo
-        print(f"Arquivo atualizado baixado como {novo_arquivo}")
+        # Exclui o arquivo anterior (não é mais necessário, pois será substituído)
+        print(f"Arquivo atualizado baixado e substituído com sucesso: {arquivo_atual}")
         
         # Fecha a aplicação e abre o novo arquivo
         messagebox.showinfo("Atualização Completa", "O arquivo foi atualizado com sucesso.")
-        os.system(f"python {novo_arquivo}")  # Executa o novo arquivo
+        os.system(f"python {arquivo_atual}")  # Executa o novo arquivo
         sys.exit()  # Encerra o processo atual
     else:
         messagebox.showerror("Erro", f"Erro ao baixar o novo arquivo: {response.status_code}")
@@ -70,7 +70,7 @@ def valida_licenca(conteudo_ini):
         valores_validos = [v.strip() for v in confere_valor.replace(',', ' ').split()]
 
         # Verifica se '1' OU '2' estão na lista
-        if '0' in valores_validos:
+        if '1' in valores_validos:
             print("✅ Validação ocorreu com êxito, Executando aplicação")
         else:
             messagebox.showerror("Erro", "❌ Validação não passou! Consulte o desenvolvedor para obter a licença!")
@@ -81,10 +81,10 @@ def valida_licenca(conteudo_ini):
         sys.exit()
 
 # URL do arquivo .ini no GitHub
-url_github_ini = 'https://raw.githubusercontent.com/Bruno-BCR/valida/main/valida-contagem-estoque.ini'
+url_github_ini = 'https://raw.githubusercontent.com/Bruno-BCR/valida/main/valida-cliente.ini'
 
 # URL do arquivo atualizado (.py) no GitHub
-url_novo_arquivo = 'https://raw.githubusercontent.com/Bruno-BCR/valida/a2125fb0ca9de613339c0f5f92be23d18ba4788e/Estoque.py'
+url_novo_arquivo = 'https://raw.githubusercontent.com/Bruno-BCR/valida/main/Estoque.py'
 
 # Versão atual do software
 versao_atual = '1.0.1'  # Atualize conforme sua versão atual
@@ -95,10 +95,6 @@ conteudo_ini = ler_arquivo_github(url_github_ini)  # Baixa o conteúdo do arquiv
 # Validar a versão e licença
 valida_versao(conteudo_ini, versao_atual, url_novo_arquivo)  # Valida versão
 valida_licenca(conteudo_ini)  # Valida licença
-
-# O restante do código continua normalmente abaixo...
-
-
 
 # Nome do banco de dados
 BANCO_DE_DADOS = "dados.db"
